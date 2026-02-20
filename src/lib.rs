@@ -9,6 +9,12 @@ pub struct DirectedGraph<N: Clone + Debug + Eq + PartialEq + Hash> {
     adjacency_list: HashMap<N, IndexSet<N>>,
 }
 
+impl<N: Clone + Debug + Eq + PartialEq + Hash> Default for DirectedGraph<N> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<N: Clone + Debug + Eq + PartialEq + Hash> DirectedGraph<N> {
     pub fn new() -> Self {
         DirectedGraph {
@@ -149,14 +155,14 @@ mod tests {
     fn test_remove_edge() {
         let mut digraph = DirectedGraph::new();
         digraph.add_node(1, vec![2, 3]);
-        assert_eq!(digraph.remove_edge(2, 3), false);
+        assert!(!digraph.remove_edge(2, 3));
         let edges_of_1 = digraph.get_edges(1);
         assert!(edges_of_1.is_some());
         let edges_of_1 = edges_of_1.unwrap();
         assert_eq!(edges_of_1.len(), 2);
         assert!(edges_of_1.contains(&2));
         assert!(edges_of_1.contains(&3));
-        assert_eq!(digraph.remove_edge(1, 3), true);
+        assert!(digraph.remove_edge(1, 3));
         let edges_of_1 = digraph.get_edges(1);
         assert!(edges_of_1.is_some());
         let edges_of_1 = edges_of_1.unwrap();
