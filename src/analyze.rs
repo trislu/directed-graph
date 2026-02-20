@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::collections::hash_map::DefaultHasher;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
@@ -98,11 +99,14 @@ where
     }
 
     // Helper stack for DFS traversing, to avoid stack-overflow on recursion
-    struct StackFrame<N> {
-        current: N,         // current node
-        adjacent_id: usize, // which adjacency node of current node (is processing)
-        dfs_path: Vec<N>,   // the DFS traverse path
-        processed: bool,    // if current node is processed
+    struct StackFrame<'a, N>
+    where
+        [N]: ToOwned,
+    {
+        current: N,             // current node
+        adjacent_id: usize,     // which adjacency node of current node (is processing)
+        dfs_path: Cow<'a, [N]>, // the DFS traverse path
+        processed: bool,        // if current node is processed
     }
 
     for start_node in digraph.adjacency_list.keys() {
@@ -111,7 +115,7 @@ where
             let mut stack = vec![StackFrame {
                 current: start_node.clone(),
                 adjacent_id: 0usize,
-                dfs_path: vec![start_node.clone()],
+                dfs_path: Cow::Owned(vec![start_node.clone()]),
                 processed: false,
             }];
             // fresh start "visiting"
@@ -164,14 +168,14 @@ where
                                     processed: false,
                                 });
                                 // move in next node, start analyzing the adjacencies of which
-                                let mut new_frame = StackFrame {
-                                    current: next_node.clone(),
+                                let mut new_dfs_path = frame.dfs_path.into_owned();
+                                new_dfs_path.push(next_node.clone());
+                                let new_frame = StackFrame {
+                                    current: next_node,
                                     adjacent_id: 0,
-                                    dfs_path: vec![],
+                                    dfs_path: Cow::Owned(new_dfs_path),
                                     processed: false,
                                 };
-                                new_frame.dfs_path.extend(frame.dfs_path);
-                                new_frame.dfs_path.push(next_node);
                                 stack.push(new_frame);
                                 // Break for DFS, let while loop pop the next node
                                 break;
