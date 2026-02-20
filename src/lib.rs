@@ -22,8 +22,8 @@ impl<N: Clone + Debug + Eq + PartialEq + Hash> DirectedGraph<N> {
         }
     }
 
-    pub fn contains(&self, n: N) -> bool {
-        self.adjacency_list.contains_key(&n)
+    pub fn contains(&self, n: &N) -> bool {
+        self.adjacency_list.contains_key(n)
     }
 
     pub fn add_node(&mut self, start: N, ends_vec: Vec<N>) {
@@ -79,24 +79,24 @@ mod tests {
     fn test_string_graph() {
         let mut digraph = DirectedGraph::new();
         digraph.add_node("Alice", vec![]);
-        assert!(digraph.contains("Alice"));
+        assert!(digraph.contains(&"Alice"));
         digraph.add_node("Bob", vec!["Eve"]);
-        assert!(digraph.contains("Bob"));
-        assert!(!digraph.contains("Eve"));
+        assert!(digraph.contains(&"Bob"));
+        assert!(!digraph.contains(&"Eve"));
         digraph.add_node("Carl", vec!["Alice", "Bob"]);
-        assert!(digraph.contains("Carl"));
+        assert!(digraph.contains(&"Carl"));
     }
 
     #[test]
     fn test_integer_graph() {
         let mut digraph = DirectedGraph::new();
         digraph.add_node(1, vec![]);
-        assert!(digraph.contains(1));
+        assert!(digraph.contains(&1));
         digraph.add_node(2, vec![3]);
-        assert!(digraph.contains(2));
-        assert!(!digraph.contains(3));
+        assert!(digraph.contains(&2));
+        assert!(!digraph.contains(&3));
         digraph.add_node(-3, vec![1, 2]);
-        assert!(digraph.contains(-3));
+        assert!(digraph.contains(&-3));
     }
 
     #[test]
