@@ -2,11 +2,11 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
 
-pub use indexmap::IndexSet;
+pub use indexmap::IndexSet as NodeSet;
 
 #[derive(Debug, Clone)]
 pub struct DirectedGraph<N: Clone + Debug + Eq + PartialEq + Hash> {
-    adjacency_list: HashMap<N, IndexSet<N>>,
+    adjacency_list: HashMap<N, NodeSet<N>>,
 }
 
 impl<N: Clone + Debug + Eq + PartialEq + Hash> Default for DirectedGraph<N> {
@@ -37,7 +37,7 @@ impl<N: Clone + Debug + Eq + PartialEq + Hash> DirectedGraph<N> {
                 });
             })
             .or_insert({
-                let mut end_set = IndexSet::new();
+                let mut end_set = NodeSet::new();
                 ends_vec.iter().for_each(|end| {
                     if !end_set.contains(end) {
                         end_set.insert(end.clone());
@@ -47,7 +47,7 @@ impl<N: Clone + Debug + Eq + PartialEq + Hash> DirectedGraph<N> {
             });
     }
 
-    pub fn get_edges(&self, n: N) -> Option<&IndexSet<N>> {
+    pub fn get_edges(&self, n: N) -> Option<&NodeSet<N>> {
         self.adjacency_list.get(&n)
     }
 
@@ -59,7 +59,7 @@ impl<N: Clone + Debug + Eq + PartialEq + Hash> DirectedGraph<N> {
         self.adjacency_list.values().map(|edges| edges.len()).sum()
     }
 
-    pub fn remove_node(&mut self, n: N) -> Option<IndexSet<N>> {
+    pub fn remove_node(&mut self, n: N) -> Option<NodeSet<N>> {
         self.adjacency_list.remove(&n)
     }
 
