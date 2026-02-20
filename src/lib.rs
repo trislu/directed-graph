@@ -4,6 +4,8 @@ use std::hash::Hash;
 
 pub use indexmap::IndexSet as NodeSet;
 
+pub mod analyze;
+
 #[derive(Debug, Clone)]
 pub struct DirectedGraph<N: Clone + Debug + Eq + PartialEq + Hash> {
     adjacency_list: HashMap<N, NodeSet<N>>,
