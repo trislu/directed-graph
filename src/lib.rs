@@ -6,18 +6,22 @@ pub use indexmap::IndexSet as NodeSet;
 
 pub mod analyze;
 
+pub trait NodeConstraints: Clone + Debug + Eq + PartialEq + Hash + PartialOrd + Ord {}
+
+impl<T> NodeConstraints for T where T: Clone + Debug + Eq + PartialEq + Hash + PartialOrd + Ord {}
+
 #[derive(Debug, Clone)]
-pub struct DirectedGraph<N: Clone + Debug + Eq + PartialEq + Hash> {
+pub struct DirectedGraph<N: NodeConstraints> {
     adjacency_list: HashMap<N, NodeSet<N>>,
 }
 
-impl<N: Clone + Debug + Eq + PartialEq + Hash> Default for DirectedGraph<N> {
+impl<N: NodeConstraints> Default for DirectedGraph<N> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<N: Clone + Debug + Eq + PartialEq + Hash> DirectedGraph<N> {
+impl<N: NodeConstraints> DirectedGraph<N> {
     pub fn new() -> Self {
         DirectedGraph {
             adjacency_list: HashMap::new(),
@@ -49,8 +53,8 @@ impl<N: Clone + Debug + Eq + PartialEq + Hash> DirectedGraph<N> {
             });
     }
 
-    pub fn get_edges(&self, n: N) -> Option<&NodeSet<N>> {
-        self.adjacency_list.get(&n)
+    pub fn get_adjacent_nodes(&self, n: &N) -> Option<&NodeSet<N>> {
+        self.adjacency_list.get(n)
     }
 
     pub fn node_count(&self) -> usize {
@@ -105,7 +109,7 @@ mod tests {
     fn test_get_edges() {
         let mut digraph = DirectedGraph::new();
         digraph.add_node(1, vec![2, 3]);
-        let edges_of_1 = digraph.get_edges(1);
+        let edges_of_1 = digraph.get_adjacent_nodes(&1);
         assert!(edges_of_1.is_some());
         let edges_of_1 = edges_of_1.unwrap();
         assert!(edges_of_1.contains(&2));
@@ -113,7 +117,7 @@ mod tests {
 
         digraph.add_node(11, vec![22]);
         digraph.add_node(11, vec![33]);
-        let edges_of_11 = digraph.get_edges(11);
+        let edges_of_11 = digraph.get_adjacent_nodes(&11);
         assert!(edges_of_11.is_some());
         let edges_of_11 = edges_of_11.unwrap();
         assert!(edges_of_11.contains(&22));
@@ -158,14 +162,14 @@ mod tests {
         let mut digraph = DirectedGraph::new();
         digraph.add_node(1, vec![2, 3]);
         assert!(!digraph.remove_edge(2, 3));
-        let edges_of_1 = digraph.get_edges(1);
+        let edges_of_1 = digraph.get_adjacent_nodes(&1);
         assert!(edges_of_1.is_some());
         let edges_of_1 = edges_of_1.unwrap();
         assert_eq!(edges_of_1.len(), 2);
         assert!(edges_of_1.contains(&2));
         assert!(edges_of_1.contains(&3));
         assert!(digraph.remove_edge(1, 3));
-        let edges_of_1 = digraph.get_edges(1);
+        let edges_of_1 = digraph.get_adjacent_nodes(&1);
         assert!(edges_of_1.is_some());
         let edges_of_1 = edges_of_1.unwrap();
         assert_eq!(edges_of_1.len(), 1);
