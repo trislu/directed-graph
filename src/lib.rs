@@ -32,7 +32,7 @@
 //! assert_eq!(graph.edge_count(), 3);
 //!
 //! // Remove an edge
-//! graph.remove_edge(1, 3);
+//! graph.remove_edge(&1, &3);
 //! assert_eq!(graph.edge_count(), 2);
 //! ```
 
@@ -255,12 +255,12 @@ impl<N: NodeConstraints> DirectedGraph<N> {
     /// use directed_graph::DirectedGraph;
     /// let mut graph = DirectedGraph::new();
     /// graph.add_node(1, vec![2, 3]);
-    /// assert!(graph.remove_edge(1, 3));
-    /// assert!(!graph.remove_edge(1, 4));
+    /// assert!(graph.remove_edge(&1, &3));
+    /// assert!(!graph.remove_edge(&1, &4));
     /// ```
-    pub fn remove_edge(&mut self, start: N, end: N) -> bool {
-        match self.adjacency_list.get_mut(&start) {
-            Some(ends) => ends.shift_remove(&end),
+    pub fn remove_edge(&mut self, start: &N, end: &N) -> bool {
+        match self.adjacency_list.get_mut(start) {
+            Some(ends) => ends.shift_remove(end),
             None => false,
         }
     }
@@ -351,14 +351,14 @@ mod tests {
     fn test_remove_edge() {
         let mut digraph = DirectedGraph::new();
         digraph.add_node(1, vec![2, 3]);
-        assert!(!digraph.remove_edge(2, 3));
+        assert!(!digraph.remove_edge(&2, &3));
         let edges_of_1 = digraph.get_adjacent_nodes(&1);
         assert!(edges_of_1.is_some());
         let edges_of_1 = edges_of_1.unwrap();
         assert_eq!(edges_of_1.len(), 2);
         assert!(edges_of_1.contains(&2));
         assert!(edges_of_1.contains(&3));
-        assert!(digraph.remove_edge(1, 3));
+        assert!(digraph.remove_edge(&1, &3));
         let edges_of_1 = digraph.get_adjacent_nodes(&1);
         assert!(edges_of_1.is_some());
         let edges_of_1 = edges_of_1.unwrap();
