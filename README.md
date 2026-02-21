@@ -13,9 +13,10 @@ Add the following to the `dependencies` section of your `Cargo.toml`:
 
 ```toml
 [dependencies]
-directed_graph = { path = "./path-to-this-crate" } # For local development
-# Or use the crates.io published version:
-# directed_graph = "0.1.0"
+# Use the crates.io published version:
+directed_graph = "0.1.0"
+# Or use downloaded source for local development:
+# directed_graph = { path = "./path-to-this-crate" }
 ```
 
 ## Basic Usage
@@ -67,16 +68,21 @@ See `analyze` module for more
 
 ```rust
 use directed_graph::{DirectedGraph, analyze};
-// Create a cyclic directed graph
 let mut cyclic_graph = DirectedGraph::new();
-cyclic_graph.add_node(1, vec![2]);
-cyclic_graph.add_node(2, vec![3]);
-cyclic_graph.add_node(3, vec![1]);
+cyclic_graph.add_node("Alice", vec!["Bob"]);
+cyclic_graph.add_node("Bob", vec!["Eve"]);
+cyclic_graph.add_node("Eve", vec!["Alice"]);
 // Run graph analysis
 let result = analyze::analyze_digraph(&cyclic_graph);
 // Detect cycles in the graph
 assert!(!result.is_acyclic());
-assert!(result.get_elementary_cycles().contains(&vec![1, 2, 3]));
+// String nodes would be sorted alphabetically, identical representations will be discarded.
+assert!(
+    // E.g., result is not ["Bob","Eve","Alice"] / ["Eve","Alice","Bob"]
+    result
+        .get_elementary_cycles()
+        .contains(&vec!["Alice", "Bob", "Eve"])
+);
 
 // Create an acyclic directed graph (DAG)
 let mut dag = DirectedGraph::new();
