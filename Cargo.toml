@@ -1,11 +1,10 @@
 [package]
 name = "directed-graph"
-description = "Yang grammar for tree-sitter"
+description = "A directed graph implementation in Rust"
 version = "0.1.0"
 authors = ["trislu <lukai@mail.ustc.edu.cn>"]
 license = "MIT"
 readme = "README.md"
-keywords = ["graph theory", "directed-graph", "cycle detection"]
 repository = "https://github.com/trislu/directed-graph"
 edition = "2024"
 rust-version = "1.90"
