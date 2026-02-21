@@ -1,5 +1,10 @@
 # Directed Graph
 
+[![Rust CI](https://github.com/trislu/directed-graph/actions/workflows/rust.yml/badge.svg)](https://github.com/trislu/directed-graph/actions/workflows/rust.yml)
+[![Cargo Publish](https://github.com/trislu/directed-graph/actions/workflows/publish.yml/badge.svg)](https://github.com/trislu/directed-graph/actions/workflows/publish.yml)
+[![Latest Version](https://img.shields.io/crates/v/directed-graph.svg)](https://crates.io/crates/directed-graph)
+[![License](https://img.shields.io/crates/l/directed-graph.svg)](LICENSE)
+
 A **type-safe, generic directed graph implementation** for Rust
 
 ## Installation
