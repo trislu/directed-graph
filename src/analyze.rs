@@ -389,6 +389,8 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::hash::{Hash, Hasher};
+
     use crate::{
         DirectedGraph,
         analyze::{analyze_digraph, find_all_cycles},
@@ -515,5 +517,73 @@ mod tests {
         assert!(result.is_acyclic());
         let cycles = result.get_all_cycles();
         assert!(cycles.is_empty());
+    }
+
+    #[test]
+    fn test_generic_node() {
+        #[derive(Debug, Clone, Default)]
+        struct BigNode {
+            id: u64,
+            _desc: String,
+            _text: Vec<Vec<u32>>,
+        }
+        impl BigNode {
+            pub fn new(id: u64) -> Self {
+                BigNode {
+                    id,
+                    _desc: "some generic big node".to_owned(),
+                    _text: vec![vec![8], vec![8], vec![4], vec![8]],
+                }
+            }
+        }
+        impl PartialEq for BigNode {
+            fn eq(&self, other: &Self) -> bool {
+                self.id == other.id
+            }
+        }
+        impl Eq for BigNode {}
+        impl Hash for BigNode {
+            fn hash<H: Hasher>(&self, state: &mut H) {
+                self.id.hash(state);
+            }
+        }
+        // Manual Ord: only compare id (ignore all other fields)
+        impl Ord for BigNode {
+            fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+                self.id.cmp(&other.id)
+            }
+        }
+        // Manual PartialOrd (required for Ord)
+        impl PartialOrd for BigNode {
+            fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+                // align with Ord
+                Some(self.cmp(other))
+            }
+        }
+        // Test 1: Acyclic graph (assert is_acyclic = true)
+        let mut acyclic_graph: DirectedGraph<BigNode> = DirectedGraph::new();
+        let node1 = BigNode::new(1);
+        let node2 = BigNode::new(2);
+        let node3 = BigNode::new(3);
+        acyclic_graph.add_node(node1.clone(), vec![node2.clone(), node3.clone()]);
+        let acyclic_result = analyze_digraph(&acyclic_graph);
+        assert!(acyclic_result.is_acyclic());
+        assert!(acyclic_result.get_all_cycles().is_empty());
+
+        // Test 2: Cyclic graph (assert is_acyclic = false)
+        let mut cyclic_graph: DirectedGraph<BigNode> = DirectedGraph::new();
+        let node11 = BigNode::new(11);
+        let node22 = BigNode::new(22);
+        let node33 = BigNode::new(33);
+        cyclic_graph.add_node(node11.clone(), vec![node22.clone(), node33.clone()]);
+        cyclic_graph.add_node(node22.clone(), vec![node33.clone()]);
+        cyclic_graph.add_node(node33.clone(), vec![node11.clone()]);
+        let cyclic_result = analyze_digraph(&cyclic_graph);
+        assert!(!cyclic_result.is_acyclic());
+        assert_eq!(cyclic_result.get_all_cycles().len(), 1);
+        assert_eq!(
+            cyclic_result.get_all_cycles()[0],
+            vec![BigNode::new(11), BigNode::new(22), BigNode::new(33)]
+        );
     }
 }

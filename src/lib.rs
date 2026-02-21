@@ -268,6 +268,8 @@ impl<N: NodeConstraints> DirectedGraph<N> {
 
 #[cfg(test)]
 mod tests {
+    use std::hash::{Hash, Hasher};
+
     use crate::DirectedGraph;
 
     #[test]
@@ -363,5 +365,71 @@ mod tests {
         assert_eq!(edges_of_1.len(), 1);
         assert!(edges_of_1.contains(&2));
         assert!(!edges_of_1.contains(&3));
+    }
+
+    #[test]
+    fn test_generic_node() {
+        #[derive(Debug, Clone, Default)]
+        struct BigNode {
+            id: u64,
+            _desc: String,
+            _text: Vec<Vec<u32>>,
+        }
+        impl BigNode {
+            pub fn new(id: u64) -> Self {
+                BigNode {
+                    id,
+                    _desc: "some generic big node".to_owned(),
+                    _text: vec![vec![8], vec![8], vec![4], vec![8]],
+                }
+            }
+        }
+        impl PartialEq for BigNode {
+            fn eq(&self, other: &Self) -> bool {
+                self.id == other.id
+            }
+        }
+        impl Eq for BigNode {}
+        impl Hash for BigNode {
+            fn hash<H: Hasher>(&self, state: &mut H) {
+                self.id.hash(state);
+            }
+        }
+        // Manual Ord: only compare id (ignore all other fields)
+        impl Ord for BigNode {
+            fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+                self.id.cmp(&other.id)
+            }
+        }
+        // Manual PartialOrd (required for Ord)
+        impl PartialOrd for BigNode {
+            fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+                // align with Ord
+                Some(self.cmp(other))
+            }
+        }
+        let mut digraph: DirectedGraph<BigNode> = DirectedGraph::new();
+        {
+            let node1 = BigNode::new(1);
+            let node2 = BigNode::new(2);
+            let node3 = BigNode::new(3);
+            digraph.add_node(node1.clone(), vec![node2, node3]);
+            let edges_of_1 = digraph.get_adjacent_nodes(&node1);
+            assert!(edges_of_1.is_some());
+            let edges_of_1 = edges_of_1.unwrap();
+            assert!(edges_of_1.contains(&BigNode::new(2)));
+            assert!(edges_of_1.contains(&BigNode::new(3)));
+        }
+        {
+            let node11 = BigNode::new(11);
+            let node22 = BigNode::new(22);
+            let node33 = BigNode::new(33);
+            digraph.add_node(node11.clone(), vec![node22, node33]);
+            let edges_of_11 = digraph.get_adjacent_nodes(&node11);
+            assert!(edges_of_11.is_some());
+            let edges_of_11 = edges_of_11.unwrap();
+            assert!(edges_of_11.contains(&BigNode::new(22)));
+            assert!(edges_of_11.contains(&BigNode::new(33)));
+        }
     }
 }
