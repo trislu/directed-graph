@@ -7,7 +7,7 @@
 //!
 //! # Key Features
 //! - Generic node support (works with all types that implement `NodeConstraints`)
-//! - Efficient adjacency list storage with `HashMap` and `IndexSet`
+//! - Efficient adjacency list storage with `IndexMap` and `IndexSet`
 //! - Core graph operations: add/remove nodes/edges, query adjacent nodes
 //! - Node/edge count statistics
 //! - Cycle detection and graph analysis (in the `analyze` module)
@@ -36,8 +36,8 @@
 //! assert_eq!(graph.edge_count(), 2);
 //! ```
 
+pub use indexmap::IndexMap as NodeMap;
 pub use indexmap::IndexSet as NodeSet;
-use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
 
@@ -48,7 +48,7 @@ pub mod analyze;
 ///
 /// Nodes must implement this trait to be used in the directed graph. The trait aggregates
 /// common Rust traits required for hashing, equality, ordering, cloning, and debugging—
-/// all essential for graph storage and operations (e.g., `HashMap` keys, set operations).
+/// all essential for graph storage and operations (e.g., `IndexMap` keys, set operations).
 ///
 /// This trait is **automatically implemented** for all types that satisfy the underlying bounds,
 /// so you do not need to implement it manually for your custom node types.
@@ -59,7 +59,7 @@ impl<T> NodeConstraints for T where T: Clone + Debug + Eq + PartialEq + Hash + P
 
 /// A generic directed graph data structure implemented with an adjacency list.
 ///
-/// The graph uses a `HashMap` to map each node to an `IndexSet` of its adjacent nodes (outgoing edges),
+/// The graph uses a `IndexMap` to map each node to an `IndexSet` of its adjacent nodes (outgoing edges),
 /// ensuring efficient:
 /// - Node/edge lookups (O(1) average for hash map)
 /// - Duplicate edge prevention (via `IndexSet`)
@@ -69,7 +69,7 @@ impl<T> NodeConstraints for T where T: Clone + Debug + Eq + PartialEq + Hash + P
 #[derive(Debug, Clone)]
 pub struct DirectedGraph<N: NodeConstraints> {
     /// Internal adjacency list storage: maps each node to its set of adjacent nodes (outgoing edges)
-    adjacency_list: HashMap<N, NodeSet<N>>,
+    adjacency_list: NodeMap<N, NodeSet<N>>,
 }
 
 impl<N: NodeConstraints> Default for DirectedGraph<N> {
@@ -92,7 +92,7 @@ impl<N: NodeConstraints> DirectedGraph<N> {
     /// ```
     pub fn new() -> Self {
         DirectedGraph {
-            adjacency_list: HashMap::new(),
+            adjacency_list: NodeMap::new(),
         }
     }
 
@@ -237,7 +237,7 @@ impl<N: NodeConstraints> DirectedGraph<N> {
     /// assert!(!graph.contains(&1));
     /// ```
     pub fn remove_node(&mut self, n: N) -> Option<NodeSet<N>> {
-        self.adjacency_list.remove(&n)
+        self.adjacency_list.shift_remove(&n)
     }
 
     /// Remove a single outgoing edge from a source node to a target node.
