@@ -41,6 +41,7 @@ pub use indexmap::IndexSet as NodeSet;
 use std::fmt::Debug;
 use std::hash::Hash;
 
+mod algorithm;
 /// Graph analysis module (cycle detection core logic)
 pub mod analyze;
 
@@ -368,7 +369,7 @@ mod tests {
     }
 
     #[test]
-    fn test_generic_node() {
+    fn test_custom_node() {
         #[derive(Debug, Clone, Default)]
         struct BigNode {
             id: u64,
@@ -379,7 +380,7 @@ mod tests {
             pub fn new(id: u64) -> Self {
                 BigNode {
                     id,
-                    _desc: "some generic big node".to_owned(),
+                    _desc: "some custom big node".to_owned(),
                     _text: vec![vec![8], vec![8], vec![4], vec![8]],
                 }
             }
